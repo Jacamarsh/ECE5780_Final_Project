@@ -1,6 +1,9 @@
 # ECE5780_Final_Project
 
-Project presentation and demonstration: https://youtu.be/P-vR60nBt4Y
+Project presentation and demonstration: [Click Here](URLhttps://youtu.be/P-vR60nBt4Y)
+
+
+ 
  - Helpful visualization of working software, schematics, circuit diagrams, utilization, etc. Very important to watch!
 
 Software Setup:
@@ -8,7 +11,7 @@ Software Setup:
 2. Download most recent version of STM32CubeMX and your board is properly configured with up to date packages.
 3. Download Keil uVision 5 (MDK-ARM bulk package is good to download off of keil's website as well). After install, in Keil's package manager, be sure to install/update all packages relevant to your specific board (in this case, the STM32F072RB). Download CMSIS package/library.
 4. Download PuTTy (this is for UART communication during use of program and for debugging)
-5. Download the FTDI VCP Driver needed (this is to enable your UART to TTL bredboard chip as COM3 when plugged into your PC via USB). Download link: https://ftdichip.com/wp-content/uploads/2021/08/CDM212364_Setup.zip
+5. Download the FTDI VCP Driver needed (this is to enable your UART to TTL bredboard chip as COM3 when plugged into your PC via USB). Download link: [Click Here](https://ftdichip.com/wp-content/uploads/2021/08/CDM212364_Setup.zip)
 6. After all this done, unzip your download of this repo in the directory you wish to install this project.
 7. To run board setup, run the .ioc file  (FinalProject->core->.ioc file(STM32MX's board pin configurations etc.)
 8. Then, under the zip file's FinalProject->MDK-ARM-> uvision project, open this! This is where all your work is being managed/executed inside of uVision!
@@ -40,14 +43,15 @@ Additional Information:
 2. While the neural network libraries, matlab code, and methods are all in the project, they are not implemented in working design. Please get reliable ADC input data of the EKG electrodes (or even reconfigure this project for any ADC input data you need better filtering/storing/identifying!!)
 3. On that note, this program can be easily reconfigured for classifying, storing, and filtering any ADC data (up to 8 channels). It heavily relies on reliable ADC data, as unreliable data isn't reliably classified.
 4. ADC data is configured and compartmentalized to be individually polled, with continuous mode handled by clock timers on breaking a while loop to enable a variety of different ways and logic to utilize ADC functionality. This is very important to preserve the STM32's processing load to only execute what is absolutely necessary at the time.
-5. To improve and fix hardware circuit, it is more preferable to use previously made PCB boards to handle multiple EKG inputs. Use this board as a replacement for the differential amplifier, and just before notch filter and low pass filter in the hardware chain. Link: https://www.olimex.com/Products/Duino/Shields/SHIELD-EKG-EMG/open-source-hardware
+5. To improve and fix hardware circuit, it is more preferable to use previously made PCB boards to handle multiple EKG inputs. Use this board as a replacement for the differential amplifier, and just before notch filter and low pass filter in the hardware chain. Link: [Click Here](https://www.olimex.com/Products/Duino/Shields/SHIELD-EKG-EMG/open-source-hardware](https://youtu.be/P-vR60nBt4Y)
 
 
 Below are some links behind tips on filters/op-aamps in our hardware circuit configuration, ADC input configuration, and neural network configuration.
 
 Sources:
-1. Making Circuit for an EKG Electrocardiogram (analog singal acquisiton of EKG's): https://www.instructables.com/Make-Your-Own-Electrocardiogram-ECG/
-2. Congifguring multiple ADC inputs without DMA: https://controllerstech.com/stm32-adc-multi-channel-without-dma/
-3. Deploying MATLAB to C code for STM32 use: https://www.youtube.com/watch?v=LAcnV_5GruY
-4. Reliable PCB for up to 6 ADC inputs: https://www.olimex.com/Products/Duino/Shields/SHIELD-EKG-EMG/open-source-hardware
-5. Our project's presentation, explanation and demo: https://youtu.be/P-vR60nBt4Y
+1. Making Circuit for an EKG Electrocardiogram (analog singal acquisiton of EKG's): [Click Here](https://www.instructables.com/Make-Your-Own-Electrocardiogram-ECG/)
+3. Congifguring multiple ADC inputs without DMA: [Click Here](https://controllerstech.com/stm32-adc-multi-channel-without-dma/)
+5. Deploying MATLAB to C code for STM32 use: [Click Here]([URL](https://www.youtube.com/watch?v=LAcnV_5GruY))
+7. Reliable PCB for up to 6 ADC inputs: [Click Here]([URL](https://www.olimex.com/Products/Duino/Shields/SHIELD-EKG-EMG/open-source-hardware))
+9. Our project's presentation, explanation and demo: [Click Here](https://youtu.be/P-vR60nBt4Y)
+
