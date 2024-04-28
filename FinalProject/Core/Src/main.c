@@ -116,18 +116,11 @@ void SetupGPIOs(void);
 void InitLEDsState(void);
 void EnableUART(void);
 void GetSignals(void);
-void SetChannels(const char* values);
 void SaveGesture(void);
 void BeginGesture(void);
 void TestGesture(void);
-void PrintError(char* values);
-void PrintMessage(char* values);
-bool CompareChannels(const char* values);
-void SetGestureFlags(bool identified, bool unidentified, bool error);
-bool compareStrings(const char *str1, const char *str2);
-unsigned long kalman_filter(unsigned long ADC_Value);
 void ADCInit(void);
-static void MX_ADC_Init(void);
+void StoreADC(void);
 void ADC_Select_CH1(void);
 void ADC_Select_CH2(void);
 void ADC_Select_CH3(void);
@@ -136,12 +129,19 @@ void ADC_Select_CH5(void);
 void ADC_Select_CH6(void);
 void ADC_Select_CH7(void);
 void ADC_Select_CH8(void);
-void StoreADC(void);
-bool ApproxGesture(unsigned long input[]);
+void PrintError(char* values);
+void PrintMessage(char* values);
 void store_in_2d_array(unsigned long input[]);
 void printArray(unsigned long* arr, int size);
+bool ApproxGesture(unsigned long input[]);
+bool CompareChannels(const char* values);
+void SetChannels(const char* values);
+void SetGestureFlags(bool identified, bool unidentified, bool error);
+bool compareStrings(const char *str1, const char *str2);
+unsigned long kalman_filter(unsigned long ADC_Value);
 char* arrayToString(unsigned long* arr, int size);
 int countNonEmptyIndices(char array[]);
+static void MX_ADC_Init(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -993,10 +993,6 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 }
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
