@@ -1,9 +1,9 @@
-# ECE5780_Final_Project
+# ECE5780_Final_Project: ElectroFlex
+
+An 8-channel, filtered, neural-network powered embedded system that measures and recognizing gestures using EKG electrodes via ADC inputs (1 current channel, up to 8 allowed).
 
 Project presentation and demonstration: [Click Here](https://youtu.be/P-vR60nBt4Y)
 
-
- 
  - Helpful visualization of working software, schematics, circuit diagrams, utilization, etc. Very important to watch!
 
 Software Setup:
