@@ -4,7 +4,14 @@
   * @file           : main.c
   * @brief          : Main program body - Final Project
   ******************************************************************************
+  * This is the controlling .c file of the program, responsible for all logic
+  * that occurs in this program. Program functionality all under Project's
+  * README.md file. All logic discussed in file is handled in this code.
+  *
   * @attention
+  * Authors: Jack Marshall, Andrew Piskadlo, and Emily Erickson
+  * University of Utah, ECE 5780: Embedded Systems
+  * April 20th, 2024
   *
   * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
@@ -151,116 +158,103 @@ int countNonEmptyIndices(char array[]);
   */
 int main(void)
 {
-  HAL_Init();
-  SystemClock_Config();
-	
-	// dealing with enabling/configuring various clocks
-	ClockLogic();
-	
-	// clearing registers for all various GPIOs' needs
-	SetupGPIOs();
-	
-	// Setting up ADC's registers and clocks (using 8-bit resolution, with 8 input channels)
-	ADCInit();
-	
-	// initializing ADC pin configurations/parameters (such as clock cycles)
-  MX_ADC_Init();
-	
-	// Set values in the channels array
-	// For now, usingn pre-defined channel values to do something
-  SetChannels("00000000"); // all 0's -> gesture not identified
-  
-	// Configuring UART, set state of LEDs, turn on UART
-	UARTConfig();
-	InitLEDsState();
-	EnableUART();
-	
-		
-	// handles all logic for UART, aka communication.
-	alreadyCalibrated = false;
-	calibrationStarted = false;
-	calibrationCounter = 0;
-	testCounter = 0;
-		
-	// Number of gestures we want in our calibration (we put 1 for now)	
-	calibrateGestureNumber = 1;
-	
-	// Number of gestures we want to test against our stored, calibrated gestures (we put 1 for now)
-	testGestureNumber = 1;
-		
+  HAL_Init(); // Initialize the Hardware Abstraction Layer (HAL)
+
+  SystemClock_Config(); // Configure the system clock
+
+  ClockLogic(); // Set up and configure various clocks
+
+  SetupGPIOs(); // Clear registers for GPIO configuration
+
+  ADCInit(); // Initialize Analog to Digital Converter (ADC)
+
+  MX_ADC_Init(); // Initialize ADC pin configurations and parameters
+
+  SetChannels("00000000"); // Set initial values in the channels array for gesture identification
+
+  UARTConfig(); // Configure UART (Universal Asynchronous Receiver/Transmitter)
+
+  InitLEDsState(); // Initialize LEDs state
+
+  EnableUART(); // Turn on UART communication
+
+  alreadyCalibrated = false; // Initialize calibration flags
+  calibrationStarted = false;
+  calibrationCounter = 0;
+  testCounter = 0;
+
+  calibrateGestureNumber = 1; // Set the number of gestures to calibrate and test
+  testGestureNumber = 1;
+
   /* Infinite loop */
   while (1)
-  { 
-		// resetting gesture flags to ensure previous states dont conflict
-		SetGestureFlags(false, false, false);
-		// general Delay, can decrease if problems w/ data coming in quicker than delay inhibits it being received
-		HAL_Delay(20);
-		if (testCounter >= testGestureNumber)
-					{
-						PrintError("Main method: Finished!!");
-						while(1)
-						{
-							// empty nested while loop
-						
-						}
-					}
-		
-		if (!calibrationStarted)
-		{
-			// If calibration mode not yet indicated, UART will keep asking
-			PrintMessage("Enter 'start.' to start calibrating!");
-			UARTBegin();
-		} 
-		else
-		{
-			if (calibrationCounter == 0)
-			{
-				PrintMessage("Calibrate mode selected: push blue button to calibrate gesture!");
-			}
-			if (calibrationCounter < calibrateGestureNumber)
-			{
-				BeginGesture();
-				GetSignals();
-				// If SaveGesture successful, input gesture data stored, success msg printed,
-				// and calibration counter increased.
-				SaveGesture();			
-							
-			}	
-			else
-			{
-				if (testCounter == 0 && (!gestureUnidentified) && (!gestureError))
-				{
-					PrintMessage("All gestures calibrated, enter 'test.' to start testing gestures!");
-					UARTBegin();
-				}
-				if(testStarted)
-				{
-					if (testCounter == 0)
-					{
-						PrintMessage("Test mode selected: push blue button when ready to test gesture!");
-					}
-					if (testCounter < testGestureNumber)
-					{
-						BeginGesture();
-						GetSignals();
-						TestGesture();
-					}			
-					else
-					{
-						PrintError("Main Method: Error!, restart program");
-						while(1)
-						{
-							// empty nested while loop
-						
-						}
-					}			
-				}			
-			}
-		}
-		
-		//End of main's while loop
-	}
-	//End of main method
+  {
+    SetGestureFlags(false, false, false); // Reset gesture flags
+
+    HAL_Delay(20); // General delay to control the rate of data processing
+
+    // Check if all test gestures have been completed
+    if (testCounter >= testGestureNumber)
+    {
+      PrintError("Main method: Finished!!");
+      while (1)
+      {
+        // Infinite loop to halt execution
+      }
+    }
+
+    if (!calibrationStarted)
+    {
+      // If calibration mode is not yet started, prompt user to initiate calibration
+      PrintMessage("Enter 'start.' to start calibrating!");
+      UARTBegin();
+    }
+    else
+    {
+      if (calibrationCounter == 0)
+      {
+        PrintMessage("Calibrate mode selected: push blue button to calibrate gesture!");
+      }
+
+      if (calibrationCounter < calibrateGestureNumber)
+      {
+        BeginGesture(); // Wait for the user to press a button to start recording gesture data
+        GetSignals(); // Acquire signal data from the ADC
+        SaveGesture(); // Save the recorded gesture data
+      }
+      else
+      {
+        if (testCounter == 0 && (!gestureUnidentified) && (!gestureError))
+        {
+          PrintMessage("All gestures calibrated, enter 'test.' to start testing gestures!");
+          UARTBegin();
+        }
+
+        if (testStarted)
+        {
+          if (testCounter == 0)
+          {
+            PrintMessage("Test mode selected: push blue button when ready to test gesture!");
+          }
+
+          if (testCounter < testGestureNumber)
+          {
+            BeginGesture(); // Wait for the user to press a button to start recording gesture data
+            GetSignals(); // Acquire signal data from the ADC
+            TestGesture(); // Test the recorded gesture against calibrated gestures
+          }
+          else
+          {
+            PrintError("Main Method: Error!, restart program");
+            while (1)
+            {
+              // Infinite loop to halt execution
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 /*****************************************************
@@ -322,7 +316,6 @@ void BeginGesture(void)
         }
 
         // When button is bouncing the bit-vector value is random since bits are set when the button is high and not when it bounces low.
-
         // Add a small delay to prevent debouncing issues
         for (volatile int i = 0; i < 1000; i++);
     }
@@ -353,126 +346,116 @@ void TestGesture(void)
 	
 }
 
+// Initializes the Analog-to-Digital Converter (ADC) for reading analog signals.
 void ADCInit(void)
 {
-	//Input Pin PC4 
+	// Configure PC4 pin as analog input
 	GPIO_InitTypeDef adc = {GPIO_PIN_4, GPIO_MODE_ANALOG, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 	HAL_GPIO_Init(GPIOC, &adc);
 
-	
-	// PC4 ca be channel 1, we need 7 more to find1111
-	
+	// Enable clock for ADC1
 	__HAL_RCC_ADC1_CLK_ENABLE();
-	//8 Bit Resolution
+
+	// Set ADC resolution to 8-bit
 	ADC1->CFGR1 |= (1 << 4);
 	ADC1->CFGR1 |= (1 << 13);
 	ADC1->CHSELR |= (1 << 14);
-	
-	// for the rest of the channels, do this too!!!
 
+	// Additional configuration needed for other channels
 }
 
-
-// *** update Kalman Filter parameters to match these signal types.
+// Reads signals from ADC for a duration of approximately 3 seconds.
 void GetSignals(void)
 {
-	// ************ Under the presuption that HAL_GetTick is in milliseconds, otherwise 3000 may be too quick *************************
 	uint32_t startTime = HAL_GetTick(); // Get the current time in milliseconds
-  uint32_t elapsedTime;
+	uint32_t elapsedTime;
 
-    while (1)
-    {
-        StoreADC(); // Call StoreADC function
+	while (1)
+	{
+		StoreADC(); // Call StoreADC function
 
-        // Calculate elapsed time
-        elapsedTime = HAL_GetTick() - startTime;
+		// Calculate elapsed time
+		elapsedTime = HAL_GetTick() - startTime;
 
-        // Check if 3 seconds have elapsed
-        if (elapsedTime >= 1000)
-        {
-            break; // Exit the loop
-        }
-    }
-		
+		// Check if 3 seconds have elapsed
+		if (elapsedTime >= 1000)
+		{
+			break; // Exit the loop
+		}
+	}
 }
 
+// Checks if the input array matches any calibrated gesture within given thresholds.
 bool ApproxGesture(unsigned long input[]) {
 	for (int i = 0; i < calibrateGestureNumber; i++) {
-        bool match = true;
-        for (int j = 0; j < COLS; j++) {
-					// *** Fix if statement below to do comparison with given threshold values, so not relying on perfect match ***********8
-					// setting approximation values between the calibration and test gesture ADC values
-            if (!(((input[j] - ADCLibrary[i][j]) <= 20) || ((ADCLibrary[i][j] - input[j]) <= 5)))
-						{ 
-								PrintMessage("ApproxGesture: wrong channel value detected!");
-                match = false;
-                break;
-            } 
-        }
-        if (match) {
-            return true; // Found a match
-        }
-    }
-    return false; // No match found
+		bool match = true;
+		for (int j = 0; j < COLS; j++) {
+			// Compare input values with calibrated values within thresholds
+			if (!(((input[j] - ADCLibrary[i][j]) <= 20) || ((ADCLibrary[i][j] - input[j]) <= 5)))
+			{ 
+				PrintMessage("ApproxGesture: wrong channel value detected!");
+				match = false;
+				break;
+			} 
+		}
+		if (match) {
+			return true; // Found a match
+		}
+	}
+	return false; // No match found
 }
 
+// Stores input array in a 2D array for gesture calibration.
 void store_in_2d_array(unsigned long input[]) {
-    if (calibrationCounter < ROWS) {
-        for (int j = 0; j < COLS; j++) {
-            ADCLibrary[calibrationCounter][j] = input[j];
-        }
-    } else {
-			PrintMessage("Store 2D Array: 2D array is full. Cannot store more data.");
-    }
+	if (calibrationCounter < ROWS) {
+		for (int j = 0; j < COLS; j++) {
+			ADCLibrary[calibrationCounter][j] = input[j];
+		}
+	} else {
+		PrintMessage("Store 2D Array: 2D array is full. Cannot store more data.");
+	}
 }
 
-
-// This method takes the 8-bit ditigal representation of the gesture and stores it in a datastructure for later access
+// Saves the calibrated gesture data if no error occurred during calibration.
 void SaveGesture (void)
 {
 	int arrSize = sizeof(KALMAN_VALS) / sizeof(KALMAN_VALS[0]); // Calculate the size of the array
 	PrintMessage("SaveGesture: KALMAN Values--> ");
-	printArray(KALMAN_VALS, arrSize); // print values 
+	printArray(KALMAN_VALS, arrSize); // Print values 
 	
 	if (gestureError)
 	{
-		// logic where if error, dont save it, print error message method, and return
+		// If error occurred during calibration, print error message and return
 		PrintMessage("SaveGesture: Error saving gesture, trying to re-calibrate!");
 	} else
 	{
-		// store all 8 channels ADC values (after through kalman filter) into 2-D unsigned long array
+		// If no error, store calibrated gesture data
 		store_in_2d_array(KALMAN_VALS);
-		// logic where if no error and gestureError is still false, save it
 		PrintMessage("SaveGesture: Success!");
 		
 		calibrationCounter++;
 	}
 }
 
-
-
-// Method uses CharReader to print to Putty the problem that has occurred
-// this method also sets all lights off, and turns on Red LED to indicate error.
+// Prints an error message to Putty using CharReader, turns off all lights, and turns on the red LED to indicate an error.
 void PrintError(char* values)
 {
-	CharReader(values);
-	
-	// Turning off all LEDs, turning red LED on --> indicate an error
-	GPIOC->ODR |= (1<<6); // setting red LED on
-	GPIOC->ODR &= ~(1<<7);
+	CharReader(values); // Display the error message
+
+	// Turn off all LEDs and turn on the red LED to indicate an error
+	GPIOC->ODR |= (1<<6); // Turn on red LED
+	GPIOC->ODR &= ~(1<<7); // Turn off other LEDs
 	GPIOC->ODR &= ~(1<<8);
 	GPIOC->ODR &= ~(1<<9);
-	
 }
 
-// Method uses CharReader to print to Putty the status that has occurred
+// Prints a message to Putty using CharReader.
 void PrintMessage(char* values)
 {
-	CharReader(values);
+	CharReader(values); // Display the message
 }
 
-
-// Method to set values in the channels array
+// Sets values in the channels array.
 void SetChannels(const char* values) {
     int i;
     // Copy values to the channels array
@@ -485,6 +468,7 @@ void SetChannels(const char* values) {
     }
 }
 
+// Compares two strings and returns true if they match, false otherwise.
 bool compareStrings(const char *str1, const char *str2) {
     while (*str1 && *str2) {
         if (*str1 != *str2) {
@@ -501,7 +485,7 @@ bool compareStrings(const char *str1, const char *str2) {
     }
 }
 
-// Method to compare values in the channels array with a given string
+// Compares values in the channels array with a given string.
 bool CompareChannels(const char* values) {
     for (int i = 0; i < 8; ++i) {
         if (channels[i] != values[i]) {
@@ -511,61 +495,59 @@ bool CompareChannels(const char* values) {
     return true; // Return true if all characters match
 }
 
-// Method to set the values of gestureIdentified, gestureUnidentified, and gestureError
+// Sets the values of gestureIdentified, gestureUnidentified, and gestureError flags.
 void SetGestureFlags(bool identified, bool unidentified, bool error) {
     gestureIdentified = identified;
     gestureUnidentified = unidentified;
     gestureError = error;
 }
 
-/**
-  * @brief Enable clock for required peripherals.
-  * @retval None
-  */
+// Enable clock for required peripherals.
 void ClockLogic(void)
 {
-		// Enable clock for GPIOA (user btn)
+    // Enable clock for GPIOA (user btn)
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-	
+
     // Enable clock for GPIOB (TX and RX pins for UART)
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
 
-    // Enable clock for USART3 (UART obviously)
+    // Enable clock for USART3 (UART)
     RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
 
     // Enable clock for GPIOC (LEDs)
     RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
-	
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	
+
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 }
 
-//configuring UART for use
+// Configures UART for use.
 void UARTConfig(void)
 {
-	// Pins on board for this are PB10(TX) and PB 11(RX), other pins work but those are close to ground 
-	// *note for user remember to use putty, also use alternate function mode 4 (0100)
-	GPIOB->AFR[1] &=~ ((1<<8)|(1<<9)|(1<<11)|(1<<12)|(1<<13)|(1<<15)); // alternate function on pb 10 and 11
-	GPIOB->AFR[1] |= ((1<<10)|(1<<14));
-	// set frequency to 115200
-	USART3->BRR = 69; // actual is 69.44 (8000000/115200), actual baud rate now is 115942
-	// Usart control register enable 
-	USART3->CR1 |= ((1<<2)|(1<<3)); // enable reciever and transmitter  	
+    // Configure pins PB10(TX) and PB11(RX) for UART
+    GPIOB->AFR[1] &=~ ((1<<8)|(1<<9)|(1<<11)|(1<<12)|(1<<13)|(1<<15)); // Alternate function on PB10 and PB11
+    GPIOB->AFR[1] |= ((1<<10)|(1<<14));
+
+    // Set baud rate to 115200
+    USART3->BRR = 69; // Actual is 69.44 (8000000/115200), actual baud rate now is 115942
+
+    // Enable receiver and transmitter
+    USART3->CR1 |= ((1<<2)|(1<<3));
 }
 
+// Enables UART.
 void EnableUART(void)
 {
-	USART3->CR1 |= (1<<0); // enable USART
+    USART3->CR1 |= (1<<0); // Enable USART
 }
 
-
+// Begins UART communication and handles user input.
 void UARTBegin(void)
 {
-		userInput = 0; // reset user input
-    int inputIndex = 0; // index for storing user inputs in the array
-    char userInputArray[8]; // array to store user inputs
+    userInput = 0; // Reset user input
+    int inputIndex = 0; // Index for storing user inputs in the array
+    char userInputArray[8]; // Array to store user inputs
 
     // Initialize userInputArray with null characters
     for (int i = 0; i < 8; ++i) {
@@ -601,55 +583,54 @@ void UARTBegin(void)
             break;
         }
     }
-			
-		// Check if userInputArray matches the string "start."
-    if (compareStrings(userInputArray, "start")) {	
-			if(!calibrationStarted){ // if "start" selected and not previously calibrated
-				GPIOC->ODR |= (1<<9); // turn green LED on
-				GPIOC->ODR &= ~(1<<8); // turn off orange LED (in case previous gestures tested)
-				GPIOC->ODR &= ~(1<<7); // turn off blue LED (we already know its reset)
-				CharReader(errorMsgGreenOn); // prints that green is on
-				calibrationStarted = true; // condition for "test" to be used
-			} else {
-					CharReader(errorMsgCalibrated); // cant calibrate twice in a row
-				}
-    }else if (compareStrings(userInputArray, "test")) {	
-			if(calibrationStarted){ // turn on orange LED if "test" selected
-				GPIOC->ODR &= ~(1<<9); // turn off green LED if "start" previously uswed
-				GPIOC->ODR |= (1<<8); // turn on orange LED
-				GPIOC->ODR &= ~(1<<7); // turn off blue LED (we already know its reset)
-				CharReader(errorMsgOrangeOn); // prints that orange is on
-				testStarted = true;
-			} else {
-					CharReader(errorMsgNotCalibrated); //cant 'test.' gestures before you 'start.' calibration
-				}
-    } 
-		else {
-			// If neither 'start.' nor 'test.' entered, you get this message!
-			CharReader(errorMsgBadArgument);
+    
+    // Check user input and perform corresponding actions
+    if (compareStrings(userInputArray, "start")) {
+        if(!calibrationStarted){
+            GPIOC->ODR |= (1<<9); // Turn on green LED
+            GPIOC->ODR &= ~(1<<8); // Turn off orange LED
+            GPIOC->ODR &= ~(1<<7); // Turn off blue LED
+            CharReader(errorMsgGreenOn); // Print message that green LED is on
+            calibrationStarted = true;
+        } else {
+            CharReader(errorMsgCalibrated); // Cannot calibrate twice in a row
+        }
+    } else if (compareStrings(userInputArray, "test")) {
+        if(calibrationStarted){
+            GPIOC->ODR &= ~(1<<9); // Turn off green LED
+            GPIOC->ODR |= (1<<8); // Turn on orange LED
+            GPIOC->ODR &= ~(1<<7); // Turn off blue LED
+            CharReader(errorMsgOrangeOn); // Print message that orange LED is on
+            testStarted = true;
+        } else {
+            CharReader(errorMsgNotCalibrated); // Cannot test gestures before calibration
+        }
+    } else {
+        CharReader(errorMsgBadArgument); // Invalid input
     }
-		
-		// Clear the userInputArray
+    
+    // Clear the userInputArray
     for (int i = 0; i < sizeof(userInputArray); ++i) {
         userInputArray[i] = '\0'; // Set each element to '\0' (null character)
-		}
-		// clear the user input
-		userInput = 0;
-		HAL_Delay(10); // small delay because baud rate is faster than board
+    }
+    // Clear the user input
+    userInput = 0;
+    HAL_Delay(10); // Small delay because baud rate is faster than the board
 }
 
-
+// Transmits a single character through USART3.
 void TransmitCharacter (char input) {
-	uint32_t TXEmask = (1<<7);
-  while ((USART3->ISR & TXEmask) == 0) { // checking if flag is up by looking at the TXE bit
-	}
-	USART3->TDR = input;
+    uint32_t TXEmask = (1<<7); // Bit mask for checking TXE flag
+    while ((USART3->ISR & TXEmask) == 0) { // Wait until TXE flag is set
+    }
+    USART3->TDR = input; // Write character to data register for transmission
 }
 
+// Reads a string and transmits its characters through USART3, padding with spaces if needed.
 void CharReader(char string[]) {
     int i;
     int length = 0;
-		int currLineDiff = MAX_STRING_LENGTH - countNonEmptyIndices(userInputArray);
+    int currLineDiff = MAX_STRING_LENGTH - countNonEmptyIndices(userInputArray); // Calculate current line difference
 
     // Calculate the length of the string
     for (i = 0; string[i] != '\0'; i++) {
@@ -661,7 +642,7 @@ void CharReader(char string[]) {
         TransmitCharacter(string[i]);
     }
 
-    // Pad the string with space characters if its length is less than 189 characters
+    // Pad the string with space characters if its length is less than currLineDiff characters
     if (length < currLineDiff) {
         for (i = length; i < currLineDiff; i++) {
             TransmitCharacter(' ');
@@ -669,12 +650,13 @@ void CharReader(char string[]) {
     }
 }
 
+// Converts an array of unsigned long integers to a string.
 char* arrayToString(unsigned long* arr, int size) {
     // Allocate memory for the string
     char* str = (char*)malloc((size * 12) * sizeof(char)); // Assuming max unsigned long size is 10 digits + 1 comma + 1 space + 1 null terminator
 
     if (str == NULL) {
-        PrintMessage("Array To String: memory allocation failed");
+        PrintMessage("Array To String: memory allocation failed"); // Notify if memory allocation fails
         return NULL;
     }
 
@@ -689,24 +671,26 @@ char* arrayToString(unsigned long* arr, int size) {
         }
     }
 
-    return str;
+    return str; // Return the dynamically allocated string
 }
 
+// Prints an array of unsigned long integers.
 void printArray(unsigned long* arr, int size) {
     // Convert array to string
     char* str = arrayToString(arr, size);
     if (str == NULL) {
-			PrintMessage("Printing array: memory allocation failed");
-      return; // Memory allocation failed
+        PrintMessage("Printing array: memory allocation failed"); // Notify if memory allocation fails
+        return; // Memory allocation failed
     }
 
     // Print the resulting string
-		PrintMessage(str);
+    PrintMessage(str); // Print the string through UART
 
     // Free allocated memory
-    free(str);
+    free(str); // Release the dynamically allocated string
 }
 
+// Counts the number of non-empty elements in a character array.
 int countNonEmptyIndices(char array[]) {
     int count = 0;
     
@@ -716,10 +700,8 @@ int countNonEmptyIndices(char array[]) {
             count++;
         }
     }   
-    return count;
+    return count; // Return the count of non-empty elements
 }
-
-
 
 // setup for GPIOA, GPIOB, and GPIOC
 void SetupGPIOs(void)
@@ -763,7 +745,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000); // 1000 is the timeout
 	KALMAN_VALS[0] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[0] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 		
 	// Channel 2
@@ -771,7 +752,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000); 
 	KALMAN_VALS[1] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[1] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	// Channel 3
@@ -779,7 +759,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000); 
 	KALMAN_VALS[2] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[2] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	// Channel 4
@@ -787,7 +766,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000); 
 	KALMAN_VALS[3] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[3] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	// Channel 5
@@ -795,7 +773,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000);
 	KALMAN_VALS[4] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[4] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	// Channel 6
@@ -803,7 +780,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000); 
 	KALMAN_VALS[5] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[5] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	// Channel 7
@@ -811,7 +787,6 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000); 
 	KALMAN_VALS[6] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[6] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	// Channel 8
@@ -819,11 +794,9 @@ void StoreADC(void)
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 1000);
 	KALMAN_VALS[7] = kalman_filter((unsigned long)HAL_ADC_GetValue(&hadc));
-	//KALMAN_VALS[7] = (unsigned long)HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	
 	int arrSize = sizeof(KALMAN_VALS) / sizeof(KALMAN_VALS[0]);
-	//printArray(KALMAN_VALS, arrSize);
 }
 
 /**
@@ -838,17 +811,16 @@ static void MX_ADC_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
 	
-	// Alter values below to match source's settings if things go wrong!
+// Alter values below to match source's settings if things go wrong!
   hadc.Instance = ADC1;
   hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc.Init.Resolution = ADC_RESOLUTION_12B; // using 12-bit resolution, can switch to 8-bit if not very clear!!
+  hadc.Init.Resolution = ADC_RESOLUTION_12B;
 	hadc.Init.ScanConvMode = ENABLE;
 	hadc.Init.ContinuousConvMode = ENABLE;
 	hadc.Init.DiscontinuousConvMode = DISABLE;
 	hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
 	hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
 	hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	// missing number of conversions function, should be set to 1 from default 8
 	hadc.Init.DMAContinuousRequests = DISABLE;
 	hadc.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc) != HAL_OK)
@@ -857,7 +829,7 @@ static void MX_ADC_Init(void)
   }
 }
 
-// *** If problems, switch all ADC_SELECT method's rank to 1. if still problems, mess with sampling time. ***
+// Selects ADC channel 1 and configures its settings.
 void ADC_Select_CH1(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -873,6 +845,7 @@ void ADC_Select_CH1(void)
 
 }
 
+// Selects ADC channel 2 and configures its settings.
 void ADC_Select_CH2(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -887,7 +860,7 @@ void ADC_Select_CH2(void)
   }
 
 }
-
+// Selects ADC channel 3 and configures its settings.
 void ADC_Select_CH3(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -903,6 +876,7 @@ void ADC_Select_CH3(void)
 
 }
 
+// Selects ADC channel 4 and configures its settings.
 void ADC_Select_CH4(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -918,6 +892,7 @@ void ADC_Select_CH4(void)
 
 }
 
+// Selects ADC channel 5 and configures its settings.
 void ADC_Select_CH5(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -933,6 +908,7 @@ void ADC_Select_CH5(void)
 
 }
 
+// Selects ADC channel 6 and configures its settings.
 void ADC_Select_CH6(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -948,6 +924,7 @@ void ADC_Select_CH6(void)
 
 }
 
+// Selects ADC channel 7 and configures its settings.
 void ADC_Select_CH7(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -963,6 +940,7 @@ void ADC_Select_CH7(void)
 
 }
 
+// Selects ADC channel 8 and configures its settings.
 void ADC_Select_CH8(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
@@ -977,8 +955,6 @@ void ADC_Select_CH8(void)
   }
 
 }
-
-
 
 
 /**
