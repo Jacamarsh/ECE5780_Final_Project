@@ -51,7 +51,7 @@ Below are some links behind tips on filters/op-aamps in our hardware circuit con
 Sources:
 1. Making Circuit for an EKG Electrocardiogram (analog singal acquisiton of EKG's): [Click Here](https://www.instructables.com/Make-Your-Own-Electrocardiogram-ECG/)
 3. Congifguring multiple ADC inputs without DMA: [Click Here](https://controllerstech.com/stm32-adc-multi-channel-without-dma/)
-5. Deploying MATLAB to C code for STM32 use: [Click Here]([URL](https://www.youtube.com/watch?v=LAcnV_5GruY))
-7. Reliable PCB for up to 6 ADC inputs: [Click Here]([URL](https://www.olimex.com/Products/Duino/Shields/SHIELD-EKG-EMG/open-source-hardware))
+5. Deploying MATLAB to C code for STM32 use: [Click Here](https://www.youtube.com/watch?v=LAcnV_5GruY)
+7. Reliable PCB for up to 6 ADC inputs: [Click Here](https://www.olimex.com/Products/Duino/Shields/SHIELD-EKG-EMG/open-source-hardware)
 9. Our project's presentation, explanation and demo: [Click Here](https://youtu.be/P-vR60nBt4Y)
 
